@@ -1,5 +1,7 @@
-# build artifacts
+# user defined ignores
+myconfigs/
 
+# build artifacts
 .eggs/
 .mypy_cache
 *.egg-info/
