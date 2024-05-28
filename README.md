@@ -17,6 +17,8 @@
   </a>
 </p>
 
+This is a fork from official version https://github.com/allenai/OLMo. 
+
 OLMo is a repository for training and using AI2's state-of-the-art open language models. 
 It is built by scientists, for scientists.
 
