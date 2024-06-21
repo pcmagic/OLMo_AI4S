@@ -186,6 +186,8 @@ class BlockType(StrEnum):
     sequential = "sequential"
 
     llama = "llama"
+
+    loramoe = "loramoe"
     """
     A block similar to the sequential block with slightly different
     implementations of operations like attention to imitate the behavior of Llama.
@@ -584,7 +586,7 @@ class DataConfig(BaseConfig):
         elif self.memmap_dtype == "uint64":
             return np.uint64
         # default to uint16 if not set
-        return np.uint16
+        return np.uint32
 
 
 class EvaluatorType(StrEnum):

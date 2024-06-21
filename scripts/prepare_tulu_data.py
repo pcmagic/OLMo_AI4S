@@ -51,7 +51,7 @@ def main(opts) -> None:
     output_dir.mkdir(exist_ok=True, parents=True)
 
     input_ids_file = np.memmap(
-        str(output_dir / "input_ids.npy"), dtype=np.uint16, mode="w+", shape=(total_tokens,)
+        str(output_dir / "input_ids.npy"), dtype=np.uint32, mode="w+", shape=(total_tokens,)
     )
     label_mask_file = np.memmap(
         str(output_dir / "label_mask.npy"), dtype=np.bool_, mode="w+", shape=(total_tokens,)

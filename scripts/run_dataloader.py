@@ -62,7 +62,7 @@ def main(cfg: TrainConfig, output_dir: Path) -> None:
             source_t = source_t.numpy()
             if name == "input_ids":
                 assert source_t.max() <= 2**16
-                source_t = source_t.astype(np.uint16)
+                source_t = source_t.astype(np.uint32)
             try:
                 target_t = name_to_batches[name]
             except KeyError:
