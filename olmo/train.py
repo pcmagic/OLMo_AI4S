@@ -1148,7 +1148,7 @@ class Trainer:
                                 self.global_step % self.cfg.save_interval == 0
                                 and self.cfg.save_num_checkpoints_to_keep != 0
                             )
-                        ):
+                        ):                            
                             log.info("Saving checkpoint...")
                             checkpoint_path, _ = self.save_checkpoint(CheckpointType.sharded)
                             log.info(f"Checkpoint saved to {checkpoint_path}")

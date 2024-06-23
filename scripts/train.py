@@ -211,6 +211,8 @@ def main(cfg: TrainConfig) -> None:
     log.info(f"Peak GPU Memory (MB) after {cfg.distributed_strategy}: {int(peak_gpu_memory() or 0)}")
     log.info("Model:")
     log.info(dist_model)
+    for name, param in dist_model.named_parameters():
+        log.info('%s.requires_grad: %s' % (str(name), str(param.requires_grad)))
 
     # Construct optimizer and learning rate scheduler.
     optim = build_optimizer(cfg, dist_model)

@@ -440,6 +440,8 @@ class ModelConfig(BaseConfig):
     See :data:`TrainConfig.precision` instead.
     """
 
+    loramoe_config: Optional[LoraMoeConfig] = None
+
     @property
     def effective_n_kv_heads(self) -> int:
         if self.n_kv_heads is None:
@@ -1215,3 +1217,13 @@ class TrainConfig(BaseConfig):
                 new_config.optimizer = OptimizerConfig.update_legacy_settings(new_config.optimizer)
 
         return new_config
+
+@dataclass
+class LoraMoeConfig(BaseConfig):
+    num: int = 2
+
+    rank: int = 16
+
+    dropout: float = 0
+
+    activity: List[float] = field(default_factory=lambda: [1, 0, 0])

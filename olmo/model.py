@@ -918,7 +918,8 @@ class OLMoLlamaBlock(OLMoBlock):
 class LoRALinear(nn.Module):
     def __init__(self, in_features, out_features, rank=4, dropout=0.0, device=None):
         super().__init__()
-        self.linear = nn.Linear(in_features, out_features, bias=False, device=device)
+        self.linear = nn.Linear(in_features, out_features,
+                                bias=False, device=device)
         self.lora_A = nn.Linear(in_features, rank, bias=False, device=device)
         self.lora_B = nn.Linear(rank, out_features, bias=False, device=device)
         # self.scaling = 1 / self.lora_B.weight.norm()
@@ -943,10 +944,13 @@ class LoraMoeAttProjBlock(nn.Module):
     def __init__(self, fused_dims, config: ModelConfig, ):
         super().__init__()
         self.config = config
-        self.loramoe_num = 2
-        self.loramoe_rank = 16
-        self.loramoe_dropout = 0
-        self.loramoe_activity = [1, 0, 0]
+        self.loramoe_num = config.loramoe_config.num
+        self.loramoe_rank = config.loramoe_config.rank
+        self.loramoe_dropout = config.loramoe_config.dropout
+        self.loramoe_activity = config.loramoe_config.activity
+        # print(config.loramoe_config)
+        # import sys
+        # sys.exit()
         self.fused_dims = fused_dims
 
         assert len(self.loramoe_activity) == self.loramoe_num + 1
@@ -964,24 +968,30 @@ class LoraMoeAttProjBlock(nn.Module):
             self.att_proj_blocks.append(LoRALinear(
                 self.config.d_model, sum(self.fused_dims), rank=self.loramoe_rank, dropout=self.loramoe_dropout, device=self.config.init_device))
 
-        # self.att_proj = nn.Linear(
-        #     config.d_model, sum(self.fused_dims), bias=config.include_bias, device=config.init_device)
-        # self.attn_norm = LayerNorm.build(config)
+        self.update_loramoe_activity()
 
     def init_normal(self, std, cutoff_factor):
         for att_proj in self.att_proj_blocks:
             att_proj.init_normal(std, cutoff_factor)
 
-    def forward(self, x):
-        # # raw transformer block
-        # att_proj_fun = self.att_proj_blocks[0]
-        # if self._activation_checkpoint_fn is not None:
-        #     qkv = att_proj_fun(
-        #         self._activation_checkpoint_fn(self.attn_norm, x))
-        # else:
-        #     qkv = att_proj_fun(self.attn_norm(x))
-        # return qkv
+    def update_loramoe_activity(self):
+        for att_proj, activity in zip(self.att_proj_blocks, self.loramoe_activity):
+            if activity > 0:
+                # for name, param in att_proj.named_parameters(): 
+                #     log.info(name)
+                #     param.requires_grad = True
+                for param in att_proj.parameters():
+                    param.requires_grad = True
+            else:
+                for param in att_proj.parameters():
+                    param.requires_grad = False
 
+    def reset_loramoe_activity(self):
+        for param in self.att_proj_blocks.parameters():
+            param.requires_grad = True
+            
+
+    def forward(self, x):
         x = self.attn_norm(x)
         qkv = 0
         for att_proj, activity in zip(self.att_proj_blocks, self.loramoe_activity):
